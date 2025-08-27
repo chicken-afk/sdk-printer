@@ -109,4 +109,4 @@ Lalu cara penggunaan di html adalah seperti dalam file printer.html
         });
     </script>
 </body>
-bash```
+```
