@@ -1,7 +1,7 @@
 # 🖨️ Printer SDK
 
-Printer SDK adalah aplikasi untuk menjembatani **Web Application** dengan **Printer lokal** melalui API (HTTP + WebSocket) yang berjalan di background (system tray).  
-SDK ini memungkinkan aplikasi web memanggil fungsi:
+Printer SDK is an application that bridges **Web Applications** with **local Printers** via API (HTTP + WebSocket) running in the background (system tray).  
+This SDK allows web applications to call functions:
 - `getPrinters()`
 - `getPaper(printerId)`
 - `print(printerId, paperSize, file)`
@@ -9,17 +9,16 @@ SDK ini memungkinkan aplikasi web memanggil fungsi:
 ---
 
 ## 🚀 Features
-- API Server berbasis **Go Fiber**.
-- **WebSocket** untuk monitoring status printer secara realtime.
-- **System Tray App** (Windows) dengan ikon printer.
-- **CDN JavaScript SDK** untuk integrasi ke HTML/Frontend.
+- API Server based on **Go Fiber**.
+- **System Tray App** (Windows) with a printer icon.
+- **CDN JavaScript SDK** for easy integration with HTML/Frontend.
 
 ---
 
 ## 📦 Installation
 
 ### 1. Build Printer SDK (Go API)
-Pastikan sudah install Go (1.20+).
+Make sure you have Go (1.20+) installed.
 
 ```bash
 git clone https://github.com/chicken-afk/printer-sdk.git
@@ -27,25 +26,25 @@ cd printer-sdk
 go mod tidy
 go build -ldflags "-H=windowsgui" -o PrinterSDK.exe
 ```
-### 2. Running SDK
-Kemudian, cukup double click printer-sdk.exe hasil build sebelumna.
-Aplikasi akan:
+### 2. Running the SDK
+Simply double-click the built printer-sdk.exe file.
+The application will:
 
-Menampilkan ikon di system tray.
+Display an icon in the system tray.
 
-Menjalankan API server di http://localhost:8971.
+Run the API server at http://localhost:8971.
 
-### 3. Use Javascript SDK
-Lalu cara penggunaan di html adalah seperti dalam file printer.html
+### 3. Use the Javascript SDK
+To use in HTML, refer to the example in printer.html
 
-```bash
+```html
 <body>
     <select id="printerSelect"></select>
     <select id="paperSize"></select>
     <input type="file" id="fileInput" />
     <button onclick="testPrint()">Test Print</button>
 
-    <script src="https://cdn.jsdelivr.net/gh/chicken-afk/sdk-printer@latest/printer-sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/chicken-afk/sdk-printer@latest/cdn/printer-sdk.js"></script>
     <script>
         const sdk = new PrinterSDK();
 
