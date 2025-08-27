@@ -33,4 +33,80 @@ Aplikasi akan:
 
 Menampilkan ikon di system tray.
 
-Menjalankan API server di http://localhost:8080.
+Menjalankan API server di http://localhost:8971.
+
+### 3. Use Javascript SDK
+Lalu cara penggunaan di html adalah seperti dalam file printer.html
+
+```bash
+<body>
+    <select id="printerSelect"></select>
+    <select id="paperSize"></select>
+    <input type="file" id="fileInput" />
+    <button onclick="testPrint()">Test Print</button>
+
+    <script src="https://cdn.jsdelivr.net/gh/chicken-afk/sdk-printer@latest/printer-sdk.js"></script>
+    <script>
+        const sdk = new PrinterSDK();
+
+        async function testPrint() {
+            const printerSelect = document.getElementById("printerSelect");
+            const paperSizeSelect = document.getElementById("paperSize");
+            const fileInput = document.querySelector("#fileInput");
+
+            const printerId = printerSelect.value;
+            const paper = paperSizeSelect.value;
+            const file = fileInput.files[0];
+
+            if (!printerId || !paper || !file) {
+                alert("Please select a printer, paper size, and file.");
+                return;
+            }
+
+            console.log("Selected printer:", printerId);
+            console.log("Selected paper:", paper);
+
+            const result = await sdk.print(printerId, paper, file);
+            console.log("Print result:", result);
+        }
+
+    </script>
+    <script>
+        // Populate printer select on page load
+        document.addEventListener("DOMContentLoaded", async () => {
+            const printers = await sdk.getPrinters();
+            const printerSelect = document.getElementById("printerSelect");
+            const paperSizeSelect = document.getElementById("paperSize");
+            printers.forEach(printer => {
+                const option = document.createElement("option");
+                option.value = printer.id;
+                option.textContent = printer.name || printer.id;
+                printerSelect.appendChild(option);
+            });
+
+            // If printers exist, trigger paper size load for the first printer
+            if (printers.length > 0) {
+                await updatePaperSizes(printers[0].id);
+            }
+
+            // Listen for printer selection change
+            printerSelect.addEventListener("change", async (e) => {
+                const printerId = e.target.value;
+                await updatePaperSizes(printerId);
+            });
+
+            async function updatePaperSizes(printerId) {
+                // Clear previous options
+                paperSizeSelect.innerHTML = "";
+                const papers = await sdk.getPaper(printerId);
+                papers.forEach(paper => {
+                    const option = document.createElement("option");
+                    option.value = paper;
+                    option.textContent = paper;
+                    paperSizeSelect.appendChild(option);
+                });
+            }
+        });
+    </script>
+</body>
+bash```
