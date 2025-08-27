@@ -2,8 +2,8 @@
     "name": "printer-sdk-js",
     "version": "1.0.0",
     "description": "JavaScript SDK for connecting web apps to local Printer SDK EXE",
-    "main": "src/index.js",
-    "module": "src/index.js",
+    "main": "npm-sdk/src/index.js",
+    "module": "npm-sdk/src/index.js",
     "keywords": [
         "printer",
         "sdk",
