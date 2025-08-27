@@ -3,15 +3,15 @@ class PrinterSDK {
         this.baseUrl = baseUrl || "http://localhost:8971/api/v1";
         this.healthCheckInterval = null;
 
-        // langsung mulai health check
+        // Immediately start health check
         this.startHealthCheck();
     }
 
-    // 🔹 Cek apakah server bisa diakses
+    // 🔹 Check if the server is accessible
     async checkConnection() {
         try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 3000); // timeout 3 detik
+            const timeout = setTimeout(() => controller.abort(), 3000); // 3 seconds timeout
 
             const res = await fetch(`${this.baseUrl}/printers`, {
                 signal: controller.signal,
@@ -26,35 +26,35 @@ class PrinterSDK {
         }
     }
 
-    // 🔹 Jalanin health check setiap 10 detik
+    // 🔹 Run health check every 10 seconds
     startHealthCheck() {
-        if (this.healthCheckInterval) return; // biar tidak dobel
+        if (this.healthCheckInterval) return; // prevent duplicate intervals
 
         this.healthCheckInterval = setInterval(async () => {
             const ok = await this.checkConnection();
             if (!ok) {
-                alert("⚠️ Printer SDK belum dijalankan. Harap buka aplikasinya.");
-                clearInterval(this.healthCheckInterval); // stop cek biar ga spam alert
+                alert("⚠️ Printer SDK is not running. Please open the application.");
+                clearInterval(this.healthCheckInterval); // stop checking to avoid alert spam
                 this.healthCheckInterval = null;
             }
-        }, 10000); // 10 detik
+        }, 10000); // 10 seconds
     }
 
-    // 🔹 Ambil daftar printer
+    // 🔹 Get list of printers
     async getPrinters() {
         const res = await fetch(`${this.baseUrl}/printers`);
         if (!res.ok) throw new Error("Failed to fetch printers");
         return await res.json();
     }
 
-    // 🔹 Ambil daftar kertas dari printer tertentu
+    // 🔹 Get list of papers from a specific printer
     async getPaper(printerId) {
         const res = await fetch(`${this.baseUrl}/printers/${printerId}/papers`);
         if (!res.ok) throw new Error("Failed to fetch paper list");
         return await res.json();
     }
 
-    // 🔹 Kirim file ke printer
+    // 🔹 Send file to printer
     async print(printerId, paperSize, file) {
         const formData = new FormData();
         formData.append("printerId", printerId);
@@ -75,5 +75,5 @@ class PrinterSDK {
     }
 }
 
-// Export ke global biar bisa dipakai di browser
+// Export to global so it can be used in the browser
 window.PrinterSDK = PrinterSDK;
