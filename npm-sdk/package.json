@@ -1,0 +1,20 @@
+{
+    "name": "printer-sdk-js",
+    "version": "1.0.0",
+    "description": "JavaScript SDK for connecting web apps to local Printer SDK EXE",
+    "main": "src/index.js",
+    "module": "src/index.js",
+    "keywords": [
+        "printer",
+        "sdk",
+        "javascript",
+        "react",
+        "nextjs"
+    ],
+    "author": "Andika Yuda Prasetya Putra <bussiness.andika@gmail.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chicken-afk/sdk-printer.git/npm-sdk"
+    }
+}
