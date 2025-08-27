@@ -32,8 +32,8 @@ func runServer() {
 	router.Router(app)
 
 	go func() {
-		log.Println("Server started at :8080")
-		if err := app.Listen(":8080"); err != nil {
+		log.Println("Server started at :8971")
+		if err := app.Listen(":8971"); err != nil {
 			log.Printf("Fiber server closed: %v\n", err)
 		}
 	}()

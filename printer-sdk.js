@@ -1,6 +1,6 @@
 class PrinterSDK {
     constructor(baseUrl) {
-        this.baseUrl = baseUrl || "http://localhost:8080/api/v1";
+        this.baseUrl = baseUrl || "http://localhost:8971/api/v1";
         this.healthCheckInterval = null;
 
         // langsung mulai health check
