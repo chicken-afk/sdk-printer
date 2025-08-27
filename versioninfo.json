@@ -1,0 +1,38 @@
+{
+    "FixedFileInfo": {
+        "FileVersion": {
+            "Major": 1,
+            "Minor": 0,
+            "Patch": 0,
+            "Build": 0
+        },
+        "ProductVersion": {
+            "Major": 1,
+            "Minor": 0,
+            "Patch": 0,
+            "Build": 0
+        },
+        "FileFlagsMask": "3f",
+        "FileFlags ": "00",
+        "FileOS": "040004",
+        "FileType": "01",
+        "FileSubtype": "00"
+    },
+    "StringFileInfo": {
+        "Comments": "Printer SDK to connect POS WebApp to local printer",
+        "CompanyName": "Andika Yuda Prasetya Putra",
+        "FileDescription": "Printer SDK",
+        "FileVersion": "1.0.0",
+        "InternalName": "PrinterSDK",
+        "LegalCopyright": "© 2025 Andika Yuda Prasetya Putra",
+        "OriginalFilename": "PrinterSDK.exe",
+        "ProductName": "Printer SDK",
+        "ProductVersion": "1.0.0"
+    },
+    "VarFileInfo": {
+        "Translation": {
+            "LangID": 1033,
+            "CharsetID": 1200
+        }
+    }
+}
