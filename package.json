@@ -1,5 +1,5 @@
 {
-    "name": "printer-sdk-js",
+    "name": "titikkomadev-printer-sdk-js",
     "version": "1.0.0",
     "description": "JavaScript SDK for connecting web apps to local Printer SDK EXE",
     "main": "npm-sdk/src/index.js",
