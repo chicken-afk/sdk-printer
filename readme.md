@@ -26,6 +26,9 @@ cd printer-sdk
 go mod tidy
 go build -ldflags "-H=windowsgui" -o PrinterSDK.exe
 ```
+
+Or simply you can download PrinterSDK.exe in builds folder in this repository if you dont want to build it manually, Its on builds/PrinterSDK.exe.
+
 ### 2. Running the SDK
 Simply double-click the built printer-sdk.exe file.
 The application will:

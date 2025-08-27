@@ -2,70 +2,83 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Printer SDK Demo</title>
 </head>
 
 <body>
-    <select id="printerSelect"></select>
-    <select id="paperSize"></select>
-    <input type="file" id="fileInput" />
-    <button onclick="testPrint()">Test Print</button>
+    <main>
+        <h1>Printer SDK Demo</h1>
 
+        <label for="printerSelect">Select Printer:</label>
+        <select id="printerSelect">
+            <option value="">-- Choose a printer --</option>
+        </select>
+
+        <label for="paperSize">Select Paper Size:</label>
+        <select id="paperSize">
+            <option value="">-- Choose paper size --</option>
+        </select>
+
+        <label for="fileInput">Select File:</label>
+        <input type="file" id="fileInput" />
+
+        <button id="printBtn">Test Print</button>
+    </main>
+
+    <!-- Load SDK -->
     <script src="https://cdn.jsdelivr.net/gh/chicken-afk/sdk-printer@latest/cdn/printer-sdk.js"></script>
-    <script>
+
+    <!-- App Logic -->
+    <script type="module">
         const sdk = new PrinterSDK();
 
-        async function testPrint() {
-            const printerSelect = document.getElementById("printerSelect");
-            const paperSizeSelect = document.getElementById("paperSize");
-            const fileInput = document.querySelector("#fileInput");
+        const printerSelect = document.getElementById("printerSelect");
+        const paperSizeSelect = document.getElementById("paperSize");
+        const fileInput = document.getElementById("fileInput");
+        const printBtn = document.getElementById("printBtn");
 
-            const printerId = printerSelect.value;
-            const paper = paperSizeSelect.value;
-            const file = fileInput.files[0];
-
-            if (!printerId || !paper || !file) {
-                alert("Please select a printer, paper size, and file.");
-                return;
-            }
-
-            console.log("Selected printer:", printerId);
-            console.log("Selected paper:", paper);
-
-            const result = await sdk.print(printerId, paper, file);
-            console.log("Print result:", result);
-        }
-
-    </script>
-    <script>
-        // Populate printer select on page load
+        /**
+         * Load available printers on page load
+         */
         document.addEventListener("DOMContentLoaded", async () => {
-            const printers = await sdk.getPrinters();
-            const printerSelect = document.getElementById("printerSelect");
-            const paperSizeSelect = document.getElementById("paperSize");
-            printers.forEach(printer => {
-                const option = document.createElement("option");
-                option.value = printer.id;
-                option.textContent = printer.name || printer.id;
-                printerSelect.appendChild(option);
-            });
+            try {
+                const printers = await sdk.getPrinters();
 
-            // If printers exist, trigger paper size load for the first printer
-            if (printers.length > 0) {
+                if (!printers || printers.length === 0) {
+                    console.warn("No printers found.");
+                    return;
+                }
+
+                // Populate printer dropdown
+                printers.forEach(printer => {
+                    const option = document.createElement("option");
+                    option.value = printer.id;
+                    option.textContent = printer.name || printer.id;
+                    printerSelect.appendChild(option);
+                });
+
+                // Load paper sizes for the first printer
                 await updatePaperSizes(printers[0].id);
+            } catch (error) {
+                console.error("Error fetching printers:", error);
             }
+        });
 
-            // Listen for printer selection change
-            printerSelect.addEventListener("change", async (e) => {
-                const printerId = e.target.value;
+        /**
+         * Update paper sizes when printer changes
+         */
+        printerSelect.addEventListener("change", async e => {
+            const printerId = e.target.value;
+            if (printerId) {
                 await updatePaperSizes(printerId);
-            });
+            }
+        });
 
-            async function updatePaperSizes(printerId) {
-                // Clear previous options
-                paperSizeSelect.innerHTML = "";
+        async function updatePaperSizes(printerId) {
+            try {
+                paperSizeSelect.innerHTML = '<option value="">-- Choose paper size --</option>';
                 const papers = await sdk.getPaper(printerId);
                 papers.forEach(paper => {
                     const option = document.createElement("option");
@@ -73,6 +86,32 @@
                     option.textContent = paper;
                     paperSizeSelect.appendChild(option);
                 });
+            } catch (error) {
+                console.error("Error fetching paper sizes:", error);
+            }
+        }
+
+        /**
+         * Handle print action
+         */
+        printBtn.addEventListener("click", async () => {
+            const printerId = printerSelect.value;
+            const paper = paperSizeSelect.value;
+            const file = fileInput.files[0];
+
+            if (!printerId || !paper || !file) {
+                alert("⚠️ Please select a printer, paper size, and file.");
+                return;
+            }
+
+            try {
+                console.log("Printing with:", { printerId, paper, file: file.name });
+                const result = await sdk.print(printerId, paper, file);
+                console.log("✅ Print result:", result);
+                alert("Print job sent successfully!");
+            } catch (error) {
+                console.error("❌ Print error:", error);
+                alert("Failed to print. Please check console for details.");
             }
         });
     </script>
