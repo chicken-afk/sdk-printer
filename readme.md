@@ -22,9 +22,15 @@ SDK ini memungkinkan aplikasi web memanggil fungsi:
 Pastikan sudah install Go (1.20+).
 
 ```bash
-git clone https://github.com/<username>/printer-sdk.git
+git clone https://github.com/chicken-afk/printer-sdk.git
 cd printer-sdk
 go mod tidy
-go build -o printer-sdk.exe
+go build -ldflags "-H=windowsgui" -o PrinterSDK.exe
 ```
+### 2. Running SDK
+Kemudian, cukup double click printer-sdk.exe hasil build sebelumna.
+Aplikasi akan:
 
+Menampilkan ikon di system tray.
+
+Menjalankan API server di http://localhost:8080.
