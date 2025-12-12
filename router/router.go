@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pos/sdk/handlers"
 )
@@ -22,6 +23,10 @@ func Router(r *fiber.App) *fiber.App {
 	routeV1.Post("/print", printerHandler.Print)
 	routeV1.Get("/printers", printerHandler.GetPrinters)
 	routeV1.Get("/printers/:id/papers", printerHandler.GetPrinterPapers)
+
+	// WebSocket routes
+	routeV1.Get("/ws/connection", handlers.WebSocketUpgrade, websocket.New(handlers.HandleWebSocket))
+	routeV1.Get("/ws/printers", handlers.WebSocketUpgrade, websocket.New(handlers.HandlePrinterMonitor))
 
 	// No need to use r.Use(routeV1), group already registered
 	return r

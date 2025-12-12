@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Printer SDK Demo - WebSocket Health Check</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .status-card {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .status-card.connected {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .status-card.disconnected {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .status-card.connecting {
+            background: linear-gradient(135deg, #f7b733 0%, #fc4a1a 100%);
+            color: white;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-icon {
+            font-size: 30px;
+        }
+
+        .status-text h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .status-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            height: 250px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .log-time {
+            color: #608b4e;
+        }
+
+        .log-info {
+            color: #4fc3f7;
+        }
+
+        .log-success {
+            color: #81c784;
+        }
+
+        .log-error {
+            color: #e57373;
+        }
+
+        .log-warning {
+            color: #ffb74d;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .printer-list {
+            margin-top: 20px;
+        }
+
+        .printer-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .printer-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .printer-id {
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖨️ Printer SDK Demo</h1>
+            <p>Real-time WebSocket Health Monitoring</p>
+        </div>
+
+        <div class="content">
+            <!-- Status Card -->
+            <div id="statusCard" class="status-card disconnected">
+                <div class="status-info">
+                    <div class="status-icon" id="statusIcon">⚫</div>
+                    <div class="status-text">
+                        <h3 id="statusTitle">Disconnected</h3>
+                        <p id="statusMessage">SDK not connected</p>
+                    </div>
+                </div>
+                <div id="reconnectInfo" style="display: none;">
+                    <p style="font-size: 12px;">Reconnecting: <span id="reconnectCount">0/5</span></p>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Connection Time</div>
+                    <div class="stat-value" id="connectionTime">0s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Heartbeats</div>
+                    <div class="stat-value" id="heartbeatCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Messages</div>
+                    <div class="stat-value" id="messageCount">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Printers Found</div>
+                    <div class="stat-value" id="printerCount">0</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button class="btn-success" id="connectBtn" onclick="connectSDK()">
+                    Connect SDK
+                </button>
+                <button class="btn-danger" id="disconnectBtn" onclick="disconnectSDK()" disabled>
+                    Disconnect
+                </button>
+                <button class="btn-info" id="pingBtn" onclick="sendPing()" disabled>
+                    Send Ping
+                </button>
+                <button class="btn-primary" id="printersBtn" onclick="loadPrinters()" disabled>
+                    Load Printers
+                </button>
+            </div>
+
+            <!-- Log Container -->
+            <div class="log-container" id="logContainer"></div>
+
+            <!-- Printer List -->
+            <div class="printer-list" id="printerList"></div>
+        </div>
+    </div>
+
+    <!-- Load SDK -->
+    <script src="src/index.js"></script>
+    <script>
+        let sdk = null;
+        let connectionStartTime = null;
+        let connectionTimer = null;
+        let heartbeatCount = 0;
+        let messageCount = 0;
+
+        // Initialize
+        function init() {
+            addLog('Page loaded. Click "Connect SDK" to start.', 'info');
+        }
+
+        // Connect SDK
+        function connectSDK() {
+            addLog('Initializing Printer SDK...', 'info');
+            sdk = new PrinterSDK('http://localhost:8971/api/v1');
+
+            // Set connection change callback
+            sdk.onConnectionChange = (isConnected, maxRetriesReached) => {
+                if (isConnected) {
+                    updateStatus('connected', 'Connected', 'SDK is running');
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    document.getElementById('pingBtn').disabled = false;
+                    document.getElementById('printersBtn').disabled = false;
+                    document.getElementById('reconnectInfo').style.display = 'none';
+
+                    connectionStartTime = Date.now();
+                    connectionTimer = setInterval(updateConnectionTime, 1000);
+                    addLog('✅ Successfully connected to SDK', 'success');
+                } else {
+                    updateStatus('disconnected', 'Disconnected',
+                        maxRetriesReached ? 'Max retries reached. Please restart SDK.' : 'Connection lost');
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    document.getElementById('pingBtn').disabled = true;
+                    document.getElementById('printersBtn').disabled = true;
+
+                    if (connectionTimer) {
+                        clearInterval(connectionTimer);
+                        connectionTimer = null;
+                    }
+                    connectionStartTime = null;
+                    document.getElementById('connectionTime').textContent = '0s';
+
+                    if (!maxRetriesReached) {
+                        const status = sdk.getConnectionStatus();
+                        document.getElementById('reconnectInfo').style.display = 'block';
+                        document.getElementById('reconnectCount').textContent =
+                            `${status.reconnectAttempts}/${sdk.maxReconnectAttempts}`;
+                        addLog(`🔄 Reconnecting... (${status.reconnectAttempts}/${sdk.maxReconnectAttempts})`, 'warning');
+                    } else {
+                        addLog('❌ Connection failed. Please check if SDK is running.', 'error');
+                        document.getElementById('reconnectInfo').style.display = 'none';
+                    }
+                }
+            };
+
+            // Set health check callback
+            sdk.onHealthCheck = (data) => {
+                messageCount++;
+                document.getElementById('messageCount').textContent = messageCount;
+
+                if (data.message === 'heartbeat') {
+                    heartbeatCount++;
+                    document.getElementById('heartbeatCount').textContent = heartbeatCount;
+                    addLog(`💓 Heartbeat received - ${data.status}`, 'info');
+                } else if (data.message === 'pong') {
+                    addLog(`🏓 Pong received - ${data.status}`, 'success');
+                }
+            };
+
+            updateStatus('connecting', 'Connecting...', 'Please wait');
+        }
+
+        // Disconnect SDK
+        function disconnectSDK() {
+            if (sdk) {
+                sdk.stopHealthCheck();
+                addLog('Disconnected from SDK', 'warning');
+                updateStatus('disconnected', 'Disconnected', 'Manually disconnected');
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('pingBtn').disabled = true;
+                document.getElementById('printersBtn').disabled = true;
+
+                if (connectionTimer) {
+                    clearInterval(connectionTimer);
+                    connectionTimer = null;
+                }
+            }
+        }
+
+        // Send ping
+        function sendPing() {
+            if (sdk && sdk.sendPing()) {
+                addLog('🏓 Ping sent to server', 'info');
+            } else {
+                addLog('❌ Failed to send ping. Not connected.', 'error');
+            }
+        }
+
+        // Load printers
+        async function loadPrinters() {
+            if (!sdk) return;
+
+            try {
+                addLog('Loading printers...', 'info');
+                const printers = await sdk.getPrinters();
+                document.getElementById('printerCount').textContent = printers.length;
+
+                const printerList = document.getElementById('printerList');
+                printerList.innerHTML = '<h3 style="margin-bottom: 15px;">Available Printers:</h3>';
+
+                printers.forEach(printer => {
+                    const item = document.createElement('div');
+                    item.className = 'printer-item';
+                    item.innerHTML = `
+                        <div class="printer-name">📄 ${printer.name}</div>
+                        <div class="printer-id">ID: ${printer.id} | Paper Sizes: ${printer.paper_sizes.length}</div>
+                    `;
+                    printerList.appendChild(item);
+                });
+
+                addLog(`✅ Loaded ${printers.length} printers`, 'success');
+            } catch (err) {
+                addLog(`❌ Failed to load printers: ${err.message}`, 'error');
+            }
+        }
+
+        // Update status UI
+        function updateStatus(status, title, message) {
+            const card = document.getElementById('statusCard');
+            const icon = document.getElementById('statusIcon');
+            const titleEl = document.getElementById('statusTitle');
+            const messageEl = document.getElementById('statusMessage');
+
+            card.className = `status-card ${status}`;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            switch (status) {
+                case 'connected':
+                    icon.textContent = '🟢';
+                    break;
+                case 'connecting':
+                    icon.textContent = '🟡';
+                    break;
+                case 'disconnected':
+                    icon.textContent = '⚫';
+                    break;
+            }
+        }
+
+        // Update connection time
+        function updateConnectionTime() {
+            if (connectionStartTime) {
+                const elapsed = Math.floor((Date.now() - connectionStartTime) / 1000);
+                document.getElementById('connectionTime').textContent = elapsed + 's';
+            }
+        }
+
+        // Add log entry
+        function addLog(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-${type}"> ${message}</span>
+            `;
+
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+
+            // Keep only last 50 logs
+            while (container.children.length > 50) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        // Initialize on page load
+        window.onload = init;
+
+        // Clean up on page unload
+        window.onbeforeunload = () => {
+            if (sdk) {
+                sdk.stopHealthCheck();
+            }
+        };
+    </script>
+</body>
+
+</html>

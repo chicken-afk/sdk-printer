@@ -68,21 +68,48 @@ func onExit() {
 	if app != nil {
 		_ = app.Shutdown() // <-- ini akan matikan server API
 	}
+	// Exit program completely when tray is closed
+	os.Exit(0)
 }
 
 func main() {
 	// Jalankan Fiber API di background
 	runServer()
 
-	// Jalankan system tray
-	go systray.Run(onReady, onExit)
-
 	// Handle signal biar bisa shutdown bersih via CTRL+C juga
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	<-c
 
-	if app != nil {
-		_ = app.Shutdown()
+	// Channel untuk notifikasi dari systray
+	done := make(chan struct{})
+
+	// Jalankan system tray
+	go func() {
+		systray.Run(onReady, onExit)
+		close(done) // Notify when systray exits
+	}()
+
+	// Wait for either signal or systray exit
+	select {
+	case <-c:
+		fmt.Println("Received interrupt signal, shutting down...")
+		// Quit systray first to unblock systray.Run()
+		systray.Quit()
+		// Wait for systray to finish
+		<-done
+		// Then shutdown Fiber server
+		if app != nil {
+			_ = app.Shutdown()
+		}
+		fmt.Println("Server stopped gracefully")
+		os.Exit(0)
+	case <-done:
+		fmt.Println("Systray closed, shutting down...")
+		// Systray already closed, just shutdown Fiber
+		if app != nil {
+			_ = app.Shutdown()
+		}
+		fmt.Println("Server stopped gracefully")
+		os.Exit(0)
 	}
 }
