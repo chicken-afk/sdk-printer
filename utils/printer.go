@@ -1,8 +1,7 @@
 package utils
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"encoding/base64"
 	"unsafe"
 
 	"github.com/alexbrainman/printer"
@@ -18,8 +17,9 @@ type PrinterInfo struct {
 }
 
 func HashPrinterName(name string) string {
-	hash := md5.Sum([]byte(name))
-	return hex.EncodeToString(hash[:])
+	//Change name to base64
+	printerId := base64.StdEncoding.EncodeToString([]byte(name))
+	return printerId
 }
 
 func GetSupportedPaperSizes(printerName string) []string {

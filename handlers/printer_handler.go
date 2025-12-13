@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"io"
+	"net/http"
 
 	"github.com/alexbrainman/printer"
 	"github.com/gofiber/fiber/v2"
@@ -70,15 +71,45 @@ func (s *printerServiceImpl) GetPrinterPapers(c *fiber.Ctx) error {
 func (s *printerServiceImpl) Print(c *fiber.Ctx) error {
 	printerId := c.FormValue("printerId")
 	paperSize := c.FormValue("paperSize")
-	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "file is required")
+	fileUrl := c.FormValue("fileUrl")
+
+	var content []byte
+	var err error
+
+	// Cek apakah ada URL file
+	if fileUrl != "" {
+		// Download file dari URL
+		resp, err := http.Get(fileUrl)
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, "failed to download file from URL: "+err.Error())
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fiber.NewError(fiber.StatusBadRequest, "failed to download file, status code: "+resp.Status)
+		}
+
+		content, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to read file from URL")
+		}
+	} else {
+		// Cek apakah ada file upload
+		fileHeader, err := c.FormFile("file")
+		if err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, "file or fileUrl is required")
+		}
+		file, err := fileHeader.Open()
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to open file")
+		}
+		defer file.Close()
+
+		content, err = io.ReadAll(file)
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, "failed to read file")
+		}
 	}
-	file, err := fileHeader.Open()
-	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to open file")
-	}
-	defer file.Close()
 
 	printerInfo := utils.GetPrinterList()
 	var name string
@@ -92,7 +123,7 @@ func (s *printerServiceImpl) Print(c *fiber.Ctx) error {
 	if paperSize == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "paperSize is required")
 	}
-	content, _ := io.ReadAll(file)
+
 	h, err := printer.Open(name)
 	if err != nil {
 		return err
